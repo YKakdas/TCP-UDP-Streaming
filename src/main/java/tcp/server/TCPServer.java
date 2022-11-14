@@ -26,7 +26,7 @@ public class TCPServer {
         ExecutorService executorService = Executors.newFixedThreadPool(8);
         ServerSocket serverSocket = new ServerSocket(4000);
 
-        File file = new File("C:\\Users\\ykakdas\\Desktop\\AdvancedNetworkProgramming\\AdvancedNetworkingInClassCoding\\sample-mp4-file.mp4");
+        File file = new File("sample-mp4-file.mp4");
         FrameGrab grab = FrameGrab.createFrameGrab(NIOUtils.readableChannel(file));
 
         List<byte[]> frames = new ArrayList<>();
