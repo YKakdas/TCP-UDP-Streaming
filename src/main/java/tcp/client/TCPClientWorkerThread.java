@@ -1,15 +1,15 @@
 package tcp.client;
 
+import data.FrameInfo;
+
 import javax.imageio.ImageIO;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
-import java.io.DataInputStream;
+import java.io.ObjectInputStream;
 import java.net.InetAddress;
 import java.net.Socket;
-import java.time.Duration;
-import java.time.Instant;
 
 public class TCPClientWorkerThread extends Thread {
 
@@ -27,45 +27,34 @@ public class TCPClientWorkerThread extends Thread {
     // Simple TCP Client, sends and receives a string
     @Override
     public void run() {
-        Socket socket = null;
+        Socket socket;
         JFrame frame = new JFrame();
         frame.setLayout(new FlowLayout());
-        frame.setSize(320, 240);
+
         JLabel lbl = new JLabel();
+        frame.add(lbl);
         try {
 
             socket = new Socket(InetAddress.getByName(serverAddress), serverPort);
 
-            DataInputStream input = new DataInputStream(socket.getInputStream());
+            ObjectInputStream input = new ObjectInputStream(socket.getInputStream());
+
+            frame.setSize(1024, 720);
 
             while (true) {
-                byte[] receiveBuffer;
-                int size = input.readInt();
+                FrameInfo frameInfo = (FrameInfo) input.readObject();
 
-                if (size == -1) {
+                if (frameInfo.getSize() == -1) {
                     socket.close();
                     return;
                 }
 
-                receiveBuffer = new byte[size];
+                BufferedImage image = ImageIO.read(new ByteArrayInputStream(frameInfo.getData()));
 
-                int numberOfReadChars = input.read(receiveBuffer);
-                BufferedImage image = ImageIO.read(new ByteArrayInputStream(receiveBuffer));
-
-                Instant start = Instant.now();
-                Instant end = Instant.now();
                 if (image != null) {
-                    Duration timeElapsed = Duration.between(start, end);
-                    if(timeElapsed.toMillis() < 30){
-                        Thread.sleep(30 - Duration.between(start, end).toMillis());
-                    }
-                    start = Instant.now();
-
                     ImageIcon icon = new ImageIcon(image);
                     lbl.setIcon(icon);
-                    frame.add(lbl);
                     frame.setVisible(true);
-                    end = Instant.now();
                 }
             }
         } catch (Exception e) {

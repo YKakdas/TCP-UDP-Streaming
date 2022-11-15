@@ -5,6 +5,8 @@ import javax.imageio.ImageIO;
 import javax.imageio.ImageWriteParam;
 import javax.imageio.ImageWriter;
 import javax.imageio.stream.ImageOutputStream;
+import javax.imageio.stream.MemoryCacheImageOutputStream;
+import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
 
@@ -12,7 +14,7 @@ public class ImageUtil {
 
     public static byte[] compress(BufferedImage bufferedImage) {
         ByteArrayOutputStream compressed = new ByteArrayOutputStream();
-        try (ImageOutputStream outputStream = ImageIO.createImageOutputStream(compressed)) {
+        try (ImageOutputStream outputStream = new MemoryCacheImageOutputStream(compressed)) {
 
             ImageWriter jpgWriter = ImageIO.getImageWritersByFormatName("JPEG").next();
 
@@ -33,5 +35,16 @@ public class ImageUtil {
             e.printStackTrace();
         }
         return compressed.toByteArray();
+    }
+
+    public static BufferedImage resize(BufferedImage img, int newW, int newH) {
+        Image tmp = img.getScaledInstance(newW, newH, Image.SCALE_SMOOTH);
+        BufferedImage dimg = new BufferedImage(newW, newH, BufferedImage.TYPE_3BYTE_BGR);
+
+        Graphics2D g2d = dimg.createGraphics();
+        g2d.drawImage(tmp, 0, 0, null);
+        g2d.dispose();
+
+        return dimg;
     }
 }

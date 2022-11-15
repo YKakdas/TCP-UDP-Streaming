@@ -1,35 +1,37 @@
 package tcp.server;
 
-import java.io.DataOutputStream;
+import java.io.ObjectOutputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.util.List;
 
 public class TCPServerWorkerThread extends Thread {
 
-    private List<byte[]> frames;
     private ServerSocket serverSocket;
 
-    public TCPServerWorkerThread(List<byte[]> frames, ServerSocket serverSocket) {
-        this.frames = frames;
+    public TCPServerWorkerThread(ServerSocket serverSocket) {
         this.serverSocket = serverSocket;
     }
 
     @Override
     public void run() {
         try {
-
-            DataOutputStream output;
+            ObjectOutputStream output;
 
             Socket socket = serverSocket.accept();
 
-            output = new DataOutputStream(socket.getOutputStream());
+            output = new ObjectOutputStream(socket.getOutputStream());
 
-            for (byte[] frame : frames) {
-                output.writeInt(frame.length);
-                output.flush();
-                output.write(frame);
-                output.flush();
+            int count = 0;
+
+            while (true) {
+                if (count < TCPServer.frames.size()) {
+                    output.writeObject(TCPServer.frames.get(count));
+                    output.flush();
+                    count++;
+                }
+                if (count >= TCPServer.frames.size() && TCPServer.readingFramesOver) {
+                    break;
+                }
             }
 
             output.writeInt(-1);
