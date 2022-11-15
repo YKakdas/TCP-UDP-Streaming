@@ -29,7 +29,7 @@ public class TCPServerWorkerThread extends Thread {
                     output.flush();
                     count++;
                 }
-                if (count >= TCPServer.frames.size() && TCPServer.readingFramesOver) {
+                if (count > TCPServer.frames.size() && TCPServer.readingFramesOver) {
                     break;
                 }
             }
