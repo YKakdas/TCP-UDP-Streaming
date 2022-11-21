@@ -1,4 +1,4 @@
-package tcp.client;
+package udp.client;
 
 import data.FrameInfo;
 
@@ -11,7 +11,7 @@ import java.io.ObjectInputStream;
 import java.net.InetAddress;
 import java.net.Socket;
 
-public class TCPClientWorkerThread extends Thread {
+public class UDPClientWorkerThread extends Thread {
 
     private String serverAddress;
     private int serverPort;
@@ -19,7 +19,7 @@ public class TCPClientWorkerThread extends Thread {
     private int width;
     private int height;
 
-    public TCPClientWorkerThread(String serverAddress, int serverPort) {
+    public UDPClientWorkerThread(String serverAddress, int serverPort) {
         this.serverAddress = serverAddress;
         this.serverPort = serverPort;
     }
