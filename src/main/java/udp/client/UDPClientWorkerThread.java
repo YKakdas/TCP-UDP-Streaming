@@ -8,6 +8,7 @@ import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
 import java.io.ObjectInputStream;
+import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.Socket;
 
@@ -24,20 +25,19 @@ public class UDPClientWorkerThread extends Thread {
         this.serverPort = serverPort;
     }
 
-    // Simple TCP Client, sends and receives a string
+    // Simple UDP Client, sends and receives a string
     @Override
     public void run() {
-        Socket socket;
+
         JFrame frame = new JFrame();
         frame.setLayout(new FlowLayout());
 
         JLabel lbl = new JLabel();
         frame.add(lbl);
         try {
-
-            socket = new Socket(InetAddress.getByName(serverAddress), serverPort);
-
-            ObjectInputStream input = new ObjectInputStream(socket.getInputStream());
+            DatagramSocket socket = new DatagramSocket();
+            InetAddress serverAddress = InetAddress.getByName(this.serverAddress);
+            //ObjectInputStream input = new ObjectInputStream(socket.getInputStream());
 
             frame.setSize(1024, 720);
 
