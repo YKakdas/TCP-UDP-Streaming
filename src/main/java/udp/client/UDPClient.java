@@ -13,7 +13,7 @@ public class UDPClient {
         ExecutorService executorService = Executors.newFixedThreadPool(8);
 
         for (int i = 0; i < 1; i++) {
-            UDPClientWorkerThread thread = new UDPClientWorkerThread("localhost", 4000);
+            UDPClientWorkerThread thread = new UDPClientWorkerThread();
             executorService.submit(thread);
         }
         executorService.shutdown();

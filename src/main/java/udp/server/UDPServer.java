@@ -28,15 +28,14 @@ public class UDPServer {
     public UDPServer() throws IOException, JCodecException {
         ExecutorService executorService = Executors.newFixedThreadPool(8);
 
-        for (int i = 0; i < 8; i++) {
+        for (int i = 0; i < 1; i++) {
             UDPServerWorkerThread thread =
-                    new UDPServerWorkerThread(4000);
+                    new UDPServerWorkerThread(1234);
             executorService.submit(thread);
         }
         executorService.shutdown();
 
         readFrames();
-
         while (!executorService.isTerminated()) {
 
         }
@@ -51,6 +50,7 @@ public class UDPServer {
             BufferedImage bufferedImage = AWTUtil.toBufferedImage(picture);
             BufferedImage resized = ImageUtil.resize(bufferedImage, 1024, 720);
             byte[] compressedImage = ImageUtil.compress(resized);
+      //      System.out.println(compressedImage.length);
             frames.add(new FrameInfo(compressedImage, compressedImage.length));
         }
         readingFramesOver = true;

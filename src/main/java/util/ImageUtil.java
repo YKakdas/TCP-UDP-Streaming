@@ -21,7 +21,7 @@ public class ImageUtil {
             // Configure JPEG compression: 70% quality
             ImageWriteParam jpgWriteParam = jpgWriter.getDefaultWriteParam();
             jpgWriteParam.setCompressionMode(ImageWriteParam.MODE_EXPLICIT);
-            jpgWriteParam.setCompressionQuality(0.7f);
+            jpgWriteParam.setCompressionQuality(0.8f);
 
             // Set your in-memory stream as the output
             jpgWriter.setOutput(outputStream);
