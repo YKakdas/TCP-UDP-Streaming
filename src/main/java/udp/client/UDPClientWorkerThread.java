@@ -28,13 +28,14 @@ public class UDPClientWorkerThread extends Thread {
         frame.setLayout(new FlowLayout());
 
         JLabel lbl = new JLabel();
+        frame.setTitle("Client");
         frame.add(lbl);
         try {
             DatagramSocket socket = new DatagramSocket();
             InetAddress ipAddress = InetAddress.getByName("localhost");
             //ObjectInputStream input = new ObjectInputStream(socket.getInputStream());
 
-            frame.setSize(1024, 720);
+            frame.setSize(720, 540);
 
             DatagramPacket packet2 = new DatagramPacket("Dummy".getBytes(), "Dummy".getBytes().length, ipAddress, 1234);
             socket.send(packet2);

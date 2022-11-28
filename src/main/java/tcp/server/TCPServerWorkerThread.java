@@ -1,5 +1,7 @@
 package tcp.server;
 
+import util.FrameUtil;
+
 import java.io.ObjectOutputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
@@ -24,12 +26,12 @@ public class TCPServerWorkerThread extends Thread {
             int count = 0;
 
             while (true) {
-                if (count < TCPServer.frames.size()) {
-                    output.writeObject(TCPServer.frames.get(count));
+                if (count < FrameUtil.frames.size()) {
+                    output.writeObject(FrameUtil.frames.get(count));
                     output.flush();
                     count++;
                 }
-                if (count > TCPServer.frames.size() && TCPServer.readingFramesOver) {
+                if (count > FrameUtil.frames.size() && FrameUtil.readingFramesOver) {
                     break;
                 }
             }

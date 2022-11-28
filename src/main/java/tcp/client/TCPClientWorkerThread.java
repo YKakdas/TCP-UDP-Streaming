@@ -30,6 +30,7 @@ public class TCPClientWorkerThread extends Thread {
         Socket socket;
         JFrame frame = new JFrame();
         frame.setLayout(new FlowLayout());
+        frame.setTitle("Client");
 
         JLabel lbl = new JLabel();
         frame.add(lbl);
@@ -39,7 +40,7 @@ public class TCPClientWorkerThread extends Thread {
 
             ObjectInputStream input = new ObjectInputStream(socket.getInputStream());
 
-            frame.setSize(1024, 720);
+            frame.setSize(720, 540);
 
             while (true) {
                 FrameInfo frameInfo = (FrameInfo) input.readObject();

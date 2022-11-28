@@ -2,6 +2,7 @@ package udp.server;
 
 import data.UDPDatagramInfo;
 import util.ByteUtil;
+import util.FrameUtil;
 
 import java.io.ByteArrayOutputStream;
 import java.io.ObjectOutputStream;
@@ -31,10 +32,10 @@ public class UDPServerWorkerThread extends Thread {
             int clientPort = received.getPort();
 
             while (true) {
-                if (count < UDPServer.frames.size()) {
+                if (count < FrameUtil.frames.size()) {
                     ByteArrayOutputStream baos = new ByteArrayOutputStream();
                     ObjectOutputStream oos = new ObjectOutputStream(baos);
-                    oos.writeObject(UDPServer.frames.get(count));
+                    oos.writeObject(FrameUtil.frames.get(count));
                     oos.flush();
                     // get the byte array of the object
                     byte[] Buf = baos.toByteArray();
@@ -57,7 +58,7 @@ public class UDPServerWorkerThread extends Thread {
                     for (int i = 0; i < numberOfFragments; i++) {
                         int start = i * 64000;
                         int end = (i + 1) * 64000;
-                        byte [] send = ByteUtil.getSubArray(start,end,Buf);
+                        byte[] send = ByteUtil.getSubArray(start, end, Buf);
                         DatagramPacket sendPacket =
                                 new DatagramPacket(send, send.length, clientAddress, clientPort);
                         socket.send(sendPacket);
@@ -67,7 +68,7 @@ public class UDPServerWorkerThread extends Thread {
 
                     count++;
                 }
-                if (count > UDPServer.frames.size() && UDPServer.readingFramesOver) {
+                if (count > FrameUtil.frames.size() && FrameUtil.readingFramesOver) {
                     break;
                 }
             }
