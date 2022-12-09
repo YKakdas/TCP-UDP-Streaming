@@ -45,7 +45,7 @@ public class TCPClientWorkerThread extends Thread {
             while (true) {
                 FrameInfo frameInfo = (FrameInfo) input.readObject();
 
-                if (frameInfo.getSize() == -1) {
+                if (frameInfo.getFrameNum() == -1) {
                     socket.close();
                     return;
                 }

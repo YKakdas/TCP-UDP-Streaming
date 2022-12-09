@@ -13,16 +13,12 @@ public class ByteUtil {
     }
 
     public static void mergeArrays(byte[] input, byte[] result, int start) {
-        for (int i = 0; i < input.length; i++) {
-            result[start + i] = input[i];
-        }
+        System.arraycopy(input, 0, result, start, input.length);
     }
 
     public static byte[] splitArray(byte[] src, int length) {
         byte[] split = new byte[length];
-        for (int i = 0; i < length; i++) {
-            split[i] = src[i];
-        }
+        System.arraycopy(src, 0, split, 0, length);
         return split;
     }
 }

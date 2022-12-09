@@ -12,59 +12,58 @@ import java.net.InetAddress;
 
 public class UDPServerWorkerThread extends Thread {
     private int serverPort;
+    private DatagramSocket socket;
+    private DatagramPacket packet;
 
-    public UDPServerWorkerThread(int serverPort) {
-        this.serverPort = serverPort;
+    public UDPServerWorkerThread(DatagramSocket socket, DatagramPacket packet) {
+        this.socket = socket;
+        this.packet = packet;
     }
 
     @Override
     public void run() {
-        DatagramSocket socket;
         try {
-            socket = new DatagramSocket(serverPort);
-
             int count = 0;
 
-            byte[] dummy = new byte[1024];
-            DatagramPacket received = new DatagramPacket(dummy, dummy.length);
-            socket.receive(received);
-            InetAddress clientAddress = received.getAddress();
-            int clientPort = received.getPort();
-
+            InetAddress clientAddress = packet.getAddress();
+            int clientPort = packet.getPort();
+            ByteArrayOutputStream baos;
+            ObjectOutputStream oos;
             while (true) {
                 if (count < FrameUtil.frames.size()) {
-                    ByteArrayOutputStream baos = new ByteArrayOutputStream();
-                    ObjectOutputStream oos = new ObjectOutputStream(baos);
+
+                    baos = new ByteArrayOutputStream();
+                    oos = new ObjectOutputStream(baos);
                     oos.writeObject(FrameUtil.frames.get(count));
                     oos.flush();
+
                     // get the byte array of the object
-                    byte[] Buf = baos.toByteArray();
+                    byte[] frameBuf = baos.toByteArray();
 
-                    int numberOfFragments = (int) Math.ceil((double) Buf.length / 64000);
-                    UDPDatagramInfo udpDatagramInfo = new UDPDatagramInfo(Buf.length, numberOfFragments);
+                    int numberOfFragments = (int) Math.ceil((double) frameBuf.length / 64000);
+                    UDPDatagramInfo udpDatagramInfo = new UDPDatagramInfo(frameBuf.length, numberOfFragments);
 
-                    ByteArrayOutputStream baos2 = new ByteArrayOutputStream();
-                    ObjectOutputStream oos2 = new ObjectOutputStream(baos2);
+                    baos = new ByteArrayOutputStream();
+                    oos = new ObjectOutputStream(baos);
 
-                    oos2.writeObject(udpDatagramInfo);
-                    oos2.flush();
-                    System.out.println(baos2.toByteArray().length);
-                    DatagramPacket sendSize =
-                            new DatagramPacket(baos2.toByteArray(), baos2.toByteArray().length, clientAddress, clientPort);
-                    socket.send(sendSize);
+                    oos.writeObject(udpDatagramInfo);
+                    oos.flush();
+
+                    DatagramPacket metadataPacket =
+                            new DatagramPacket(baos.toByteArray(), baos.toByteArray().length, clientAddress, clientPort);
+                    socket.send(metadataPacket);
 
                     Thread.sleep(50);
-                    System.out.println(Buf.length);
+
                     for (int i = 0; i < numberOfFragments; i++) {
                         int start = i * 64000;
                         int end = (i + 1) * 64000;
-                        byte[] send = ByteUtil.getSubArray(start, end, Buf);
-                        DatagramPacket sendPacket =
-                                new DatagramPacket(send, send.length, clientAddress, clientPort);
-                        socket.send(sendPacket);
+                        byte[] sendBuffer = ByteUtil.getSubArray(start, end, frameBuf);
+                        DatagramPacket sendFragment =
+                                new DatagramPacket(sendBuffer, sendBuffer.length, clientAddress, clientPort);
+                        socket.send(sendFragment);
                         System.out.println("Sent bytes");
                     }
-
 
                     count++;
                 }
@@ -73,9 +72,7 @@ public class UDPServerWorkerThread extends Thread {
                 }
             }
 
-
             socket.close();
-
         } catch (Exception e) {
             e.printStackTrace();
         }

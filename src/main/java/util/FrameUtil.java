@@ -29,12 +29,13 @@ public class FrameUtil {
         FrameGrab grab = FrameGrab.createFrameGrab(NIOUtils.readableChannel(file));
         Picture picture;
 
+        int count = 0;
         while (null != (picture = grab.getNativeFrame())) {
             BufferedImage bufferedImage = AWTUtil.toBufferedImage(picture);
             BufferedImage resized = ImageUtil.resize(bufferedImage, 720, 540);
             byte[] compressedImage = ImageUtil.compress(resized);
-            //      System.out.println(compressedImage.length);
-            frames.add(new FrameInfo(compressedImage, compressedImage.length));
+            frames.add(new FrameInfo(compressedImage, count));
+            count++;
         }
         readingFramesOver = true;
     }
@@ -50,6 +51,7 @@ public class FrameUtil {
         FrameGrabber grabber = new OpenCVFrameGrabber(0);
         grabber.start();
 
+        int count = 0;
         while (true) {
             Frame frame = grabber.grab();
             BufferedImage image = new Java2DFrameConverter().convert(frame);
@@ -62,7 +64,8 @@ public class FrameUtil {
 
             BufferedImage resized = ImageUtil.resize(image, 720, 540);
             byte[] compressedImage = ImageUtil.compress(resized);
-            frames.add(new FrameInfo(compressedImage, compressedImage.length));
+            frames.add(new FrameInfo(compressedImage, count));
+            count++;
             Thread.sleep(30);
         }
 

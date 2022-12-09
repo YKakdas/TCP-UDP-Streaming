@@ -19,7 +19,6 @@ public class UDPClientWorkerThread extends Thread {
     private int width;
     private int height;
 
-
     // Simple UDP Client, sends and receives a string
     @Override
     public void run() {
@@ -33,40 +32,39 @@ public class UDPClientWorkerThread extends Thread {
         try {
             DatagramSocket socket = new DatagramSocket();
             InetAddress ipAddress = InetAddress.getByName("localhost");
-            //ObjectInputStream input = new ObjectInputStream(socket.getInputStream());
 
             frame.setSize(720, 540);
 
-            DatagramPacket packet2 = new DatagramPacket("Dummy".getBytes(), "Dummy".getBytes().length, ipAddress, 1234);
-            socket.send(packet2);
+            DatagramPacket initPacket = new DatagramPacket("init".getBytes(), "init".getBytes().length, ipAddress, 1234);
+            socket.send(initPacket);
 
+            ByteArrayInputStream baos;
+            ObjectInputStream oos;
             while (true) {
                 try {
                     byte[] buffer = new byte[76];
-                    DatagramPacket packet = new DatagramPacket(buffer, buffer.length);
-                    socket.receive(packet);
+                    DatagramPacket metadataPacket = new DatagramPacket(buffer, buffer.length);
+                    socket.receive(metadataPacket);
 
-                    System.out.println("Received info " + packet.getLength() );
-                    ByteArrayInputStream baos = new ByteArrayInputStream(buffer);
-                    ObjectInputStream oos = new ObjectInputStream(baos);
+                    baos = new ByteArrayInputStream(buffer);
+                    oos = new ObjectInputStream(baos);
                     UDPDatagramInfo udpDatagramInfo = (UDPDatagramInfo) oos.readObject();
 
-                    byte[] total = new byte[udpDatagramInfo.getSize()];
+                    byte[] frameData = new byte[udpDatagramInfo.getSize()];
                     int count = 0;
                     for (int i = 0; i < udpDatagramInfo.getNumberOfFragments(); i++) {
-                        buffer = new byte[64000];
-                        packet = new DatagramPacket(buffer, buffer.length);
-                        socket.receive(packet);
-                        ByteUtil.mergeArrays(ByteUtil.splitArray(packet.getData(), packet.getLength()), total, count);
-                        count += packet.getLength();
-                        System.out.println("Received bytes");
+                        byte[] segmentBuffer = new byte[64000];
+                        DatagramPacket segmentPacket = new DatagramPacket(segmentBuffer, segmentBuffer.length);
+                        socket.receive(segmentPacket);
+                        ByteUtil.mergeArrays(ByteUtil.splitArray(segmentPacket.getData(), segmentPacket.getLength()), frameData, count);
+                        count += segmentPacket.getLength();
                     }
 
-                    ByteArrayInputStream baos2 = new ByteArrayInputStream(total);
-                    ObjectInputStream oos2 = new ObjectInputStream(baos2);
-                    FrameInfo frameInfo = (FrameInfo) oos2.readObject();
+                    baos = new ByteArrayInputStream(frameData);
+                    oos = new ObjectInputStream(baos);
+                    FrameInfo frameInfo = (FrameInfo) oos.readObject();
 
-                    if (frameInfo.getSize() == -1) {
+                    if (frameInfo.getFrameNum() == -1) {
                         socket.close();
                         return;
                     }
@@ -78,13 +76,13 @@ public class UDPClientWorkerThread extends Thread {
                         lbl.setIcon(icon);
                         frame.setVisible(true);
                     }
-                }catch (Exception e){
-                  //  e.printStackTrace();
+                } catch (Exception e) {
+                    //  e.printStackTrace();
                 }
 
             }
         } catch (Exception e) {
-         //   e.printStackTrace();
+            //   e.printStackTrace();
         }
 
     }

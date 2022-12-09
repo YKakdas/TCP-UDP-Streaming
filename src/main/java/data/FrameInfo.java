@@ -8,7 +8,7 @@ public class FrameInfo implements Serializable {
     @Serial
     private static final long serialVersionUID = 1L;
     private byte[] data;
-    private int size;
+    private int frameNum;
 
     public byte[] getData() {
         return data;
@@ -18,16 +18,16 @@ public class FrameInfo implements Serializable {
         this.data = data;
     }
 
-    public int getSize() {
-        return size;
+    public int getFrameNum() {
+        return frameNum;
     }
 
-    public void setSize(int size) {
-        this.size = size;
+    public void setFrameNum(int frameNum) {
+        this.frameNum = frameNum;
     }
 
-    public FrameInfo(byte[] data, int size) {
+    public FrameInfo(byte[] data, int frameNum) {
         this.data = data;
-        this.size = size;
+        this.frameNum = frameNum;
     }
 }
