@@ -16,15 +16,13 @@ import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
 
 public class FrameUtil {
-
-    public static List<FrameInfo> frames = new ArrayList<>();
+    public static volatile FrameInfo currentFrame = null;
     public static boolean readingFramesOver = false;
+    public static boolean isCamera = false;
 
-    public static void readVideo() throws IOException, JCodecException {
+    public static void readVideo() throws IOException, JCodecException, InterruptedException {
         File file = new File("src/main/java/video_samples/2min.mp4");
         FrameGrab grab = FrameGrab.createFrameGrab(NIOUtils.readableChannel(file));
         Picture picture;
@@ -34,40 +32,67 @@ public class FrameUtil {
             BufferedImage bufferedImage = AWTUtil.toBufferedImage(picture);
             BufferedImage resized = ImageUtil.resize(bufferedImage, 720, 540);
             byte[] compressedImage = ImageUtil.compress(resized);
-            frames.add(new FrameInfo(compressedImage, count));
+            currentFrame = new FrameInfo(compressedImage, count);
+            Thread.sleep(30);
             count++;
         }
         readingFramesOver = true;
     }
 
-    public static void readCamera() throws IOException, JCodecException, InterruptedException {
-        JFrame jFrame = new JFrame();
-        jFrame.setLayout(new FlowLayout());
-        jFrame.setSize(720, 540);
-        jFrame.setTitle("Server - Streaming Camera");
+    public static void readCamera() {
+        isCamera = true;
+        try {
+            JFrame jFrame = new JFrame();
+            jFrame.setLayout(new FlowLayout());
+            jFrame.setSize(720, 540);
+            jFrame.setTitle("Server - Streaming Camera");
 
-        JLabel lbl = new JLabel();
-        jFrame.add(lbl);
-        FrameGrabber grabber = new OpenCVFrameGrabber(0);
-        grabber.start();
+            JLabel lbl = new JLabel();
+            jFrame.add(lbl);
+            FrameGrabber grabber = new OpenCVFrameGrabber(0);
+            grabber.start();
 
-        int count = 0;
-        while (true) {
-            Frame frame = grabber.grab();
-            BufferedImage image = new Java2DFrameConverter().convert(frame);
+            int count = 0;
+            while (true) {
+                Frame frame = grabber.grab();
+                BufferedImage image = new Java2DFrameConverter().convert(frame);
 
-            if (image != null) {
-                ImageIcon icon = new ImageIcon(image);
-                lbl.setIcon(icon);
-                jFrame.setVisible(true);
+                if (image != null) {
+                    image = ImageUtil.mirror(image);
+                    ImageIcon icon = new ImageIcon(image);
+                    lbl.setIcon(icon);
+                    jFrame.setVisible(true);
+                }
+
+                BufferedImage resized = ImageUtil.resize(image, 720, 540);
+
+                byte[] compressedImage = ImageUtil.compress(resized);
+
+                currentFrame = new FrameInfo(compressedImage, count);
+                Thread.sleep(30);
+
+                count++;
             }
-
-            BufferedImage resized = ImageUtil.resize(image, 720, 540);
-            byte[] compressedImage = ImageUtil.compress(resized);
-            frames.add(new FrameInfo(compressedImage, count));
-            count++;
-            Thread.sleep(30);
+        } catch (Exception e) {
+            readingFramesOver = true;
         }
 
+    }
+
+    public static BufferedImage rotate(BufferedImage image, double angle) {
+        int w = image.getWidth(), h = image.getHeight();
+        GraphicsConfiguration gc = getDefaultConfiguration();
+        BufferedImage result = gc.createCompatibleImage(w, h);
+        Graphics2D g = result.createGraphics();
+        g.rotate(Math.toRadians(angle), w / 2, h / 2);
+        g.drawRenderedImage(image, null);
+        g.dispose();
+        return result;
+    }
+
+    public static GraphicsConfiguration getDefaultConfiguration() {
+        GraphicsEnvironment ge = GraphicsEnvironment.getLocalGraphicsEnvironment();
+        GraphicsDevice gd = ge.getDefaultScreenDevice();
+        return gd.getDefaultConfiguration();
     }
 }

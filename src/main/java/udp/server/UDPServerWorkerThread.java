@@ -1,10 +1,12 @@
 package udp.server;
 
+import data.FrameInfo;
 import data.UDPDatagramInfo;
 import util.ByteUtil;
 import util.FrameUtil;
 
 import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.io.ObjectOutputStream;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
@@ -27,54 +29,70 @@ public class UDPServerWorkerThread extends Thread {
 
             InetAddress clientAddress = packet.getAddress();
             int clientPort = packet.getPort();
-            ByteArrayOutputStream baos;
-            ObjectOutputStream oos;
-            while (true) {
-                if (count < FrameUtil.frames.size()) {
 
-                    baos = new ByteArrayOutputStream();
-                    oos = new ObjectOutputStream(baos);
-                    oos.writeObject(FrameUtil.frames.get(count));
-                    oos.flush();
+            System.out.println("A client with ip: " + clientAddress + " and port : " + clientPort + " has been connected");
 
-                    // get the byte array of the object
-                    byte[] frameBuf = baos.toByteArray();
+            while (FrameUtil.currentFrame == null) ;
 
-                    int numberOfFragments = (int) Math.ceil((double) frameBuf.length / 64000);
-                    UDPDatagramInfo udpDatagramInfo = new UDPDatagramInfo(frameBuf.length, numberOfFragments);
-
-                    baos = new ByteArrayOutputStream();
-                    oos = new ObjectOutputStream(baos);
-
-                    oos.writeObject(udpDatagramInfo);
-                    oos.flush();
-
-                    DatagramPacket metadataPacket =
-                            new DatagramPacket(baos.toByteArray(), baos.toByteArray().length, clientAddress, clientPort);
-                    socket.send(metadataPacket);
-
-                    Thread.sleep(50);
-
-                    for (int i = 0; i < numberOfFragments; i++) {
-                        int start = i * 64000;
-                        int end = (i + 1) * 64000;
-                        byte[] sendBuffer = ByteUtil.getSubArray(start, end, frameBuf);
-                        DatagramPacket sendFragment =
-                                new DatagramPacket(sendBuffer, sendBuffer.length, clientAddress, clientPort);
-                        socket.send(sendFragment);
-                        System.out.println("Sent bytes");
-                    }
-
-                    count++;
-                }
-                if (count > FrameUtil.frames.size() && FrameUtil.readingFramesOver) {
-                    break;
-                }
-            }
+            loopForStreaming(socket, clientAddress, clientPort);
 
             socket.close();
         } catch (Exception e) {
             e.printStackTrace();
         }
+    }
+
+    private void loopForStreaming(DatagramSocket socket,
+                                  InetAddress clientAddress, int clientPort) throws IOException, InterruptedException {
+
+        ByteArrayOutputStream baos;
+        ObjectOutputStream oos;
+        int previousNum = 0;
+        while (true) {
+            baos = new ByteArrayOutputStream();
+            oos = new ObjectOutputStream(baos);
+            if (previousNum == FrameUtil.currentFrame.getFrameNum()) {
+                continue;
+            }
+            int currentNum = FrameUtil.currentFrame.getFrameNum();
+            FrameInfo temp = new FrameInfo(FrameUtil.currentFrame.getData(), FrameUtil.currentFrame.getFrameNum());
+            oos.writeObject(temp);
+            oos.flush();
+
+            byte[] frameBuf = baos.toByteArray();
+
+            int numberOfFragments = (int) Math.ceil((double) frameBuf.length / 64000);
+            UDPDatagramInfo udpDatagramInfo = new UDPDatagramInfo(frameBuf.length, numberOfFragments);
+
+            baos = new ByteArrayOutputStream();
+            oos = new ObjectOutputStream(baos);
+
+            oos.writeObject(udpDatagramInfo);
+            oos.flush();
+
+            DatagramPacket metadataPacket =
+                    new DatagramPacket(baos.toByteArray(), baos.toByteArray().length, clientAddress, clientPort);
+            socket.send(metadataPacket);
+
+            for (int i = 0; i < numberOfFragments; i++) {
+                int start = i * 64000;
+                int end = (i + 1) * 64000;
+                byte[] sendBuffer = ByteUtil.getSubArray(start, end, frameBuf);
+                DatagramPacket sendFragment =
+                        new DatagramPacket(sendBuffer, sendBuffer.length, clientAddress, clientPort);
+                socket.send(sendFragment);
+                System.out.println("sent");
+            }
+
+            previousNum = currentNum;
+            System.out.println("Heree");
+
+            if (FrameUtil.readingFramesOver) {
+                break;
+            }
+        }
+        oos.writeInt(-1);
+        oos.flush();
+        socket.close();
     }
 }

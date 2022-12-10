@@ -3,6 +3,8 @@ package udp.client;
 import data.FrameInfo;
 import data.UDPDatagramInfo;
 import util.ByteUtil;
+import util.FrameUtil;
+import util.ImageUtil;
 
 import javax.imageio.ImageIO;
 import javax.swing.*;
@@ -19,7 +21,6 @@ public class UDPClientWorkerThread extends Thread {
     private int width;
     private int height;
 
-    // Simple UDP Client, sends and receives a string
     @Override
     public void run() {
 
@@ -49,7 +50,6 @@ public class UDPClientWorkerThread extends Thread {
                     baos = new ByteArrayInputStream(buffer);
                     oos = new ObjectInputStream(baos);
                     UDPDatagramInfo udpDatagramInfo = (UDPDatagramInfo) oos.readObject();
-
                     byte[] frameData = new byte[udpDatagramInfo.getSize()];
                     int count = 0;
                     for (int i = 0; i < udpDatagramInfo.getNumberOfFragments(); i++) {
@@ -62,6 +62,7 @@ public class UDPClientWorkerThread extends Thread {
 
                     baos = new ByteArrayInputStream(frameData);
                     oos = new ObjectInputStream(baos);
+
                     FrameInfo frameInfo = (FrameInfo) oos.readObject();
 
                     if (frameInfo.getFrameNum() == -1) {
@@ -70,8 +71,10 @@ public class UDPClientWorkerThread extends Thread {
                     }
 
                     BufferedImage image = ImageIO.read(new ByteArrayInputStream(frameInfo.getData()));
-
                     if (image != null) {
+                        if (FrameUtil.isCamera) {
+                            image = ImageUtil.mirror(image);
+                        }
                         ImageIcon icon = new ImageIcon(image);
                         lbl.setIcon(icon);
                         frame.setVisible(true);

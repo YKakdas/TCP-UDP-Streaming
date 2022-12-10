@@ -21,7 +21,7 @@ public class ImageUtil {
             // Configure JPEG compression: 70% quality
             ImageWriteParam jpgWriteParam = jpgWriter.getDefaultWriteParam();
             jpgWriteParam.setCompressionMode(ImageWriteParam.MODE_EXPLICIT);
-            jpgWriteParam.setCompressionQuality(0.7f);
+            jpgWriteParam.setCompressionQuality(0.3f);
 
             // Set your in-memory stream as the output
             jpgWriter.setOutput(outputStream);
@@ -46,5 +46,19 @@ public class ImageUtil {
         g2d.dispose();
 
         return dimg;
+    }
+
+    public static BufferedImage mirror(BufferedImage src) {
+        int height = src.getHeight();
+        int width = src.getWidth();
+        BufferedImage mirrored = new BufferedImage(width, height, BufferedImage.TYPE_3BYTE_BGR);
+        for (int j = 0; j < height; j++) {
+            for (int i = 0, w = width - 1; i < width; i++, w--) {
+                int p = src.getRGB(i, j);
+                //set mirror image pixel value - both left and right
+                mirrored.setRGB(w, j, p);
+            }
+        }
+        return mirrored;
     }
 }

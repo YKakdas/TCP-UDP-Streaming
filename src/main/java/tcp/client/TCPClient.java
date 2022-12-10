@@ -4,9 +4,6 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 public class TCPClient {
-    public static void main(String[] args) {
-        new TCPClient();
-    }
 
     public TCPClient() {
         ExecutorService executorService = Executors.newFixedThreadPool(8);

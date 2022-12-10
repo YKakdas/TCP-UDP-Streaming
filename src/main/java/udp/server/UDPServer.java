@@ -1,5 +1,6 @@
 package udp.server;
 
+import config.ServerRunner;
 import org.jcodec.api.JCodecException;
 import util.FrameUtil;
 
@@ -9,16 +10,20 @@ import java.net.DatagramSocket;
 
 public class UDPServer {
 
-    public static void main(String[] args) throws IOException {
-        new UDPServer();
-    }
-
     public UDPServer() throws IOException {
         DatagramSocket socket = new DatagramSocket(1234);
         new Thread(() -> {
             try {
-                FrameUtil.readVideo();
-            } catch (IOException | JCodecException e) {
+                if (ServerRunner.isVideo) {
+                    FrameUtil.readVideo();
+                } else if (ServerRunner.isWebcam) {
+                    FrameUtil.readCamera();
+                } else {
+                    System.out.println("Wrong inputs! Please specify the input such as -video or -webcam");
+                    System.exit(0);
+                }
+
+            } catch (Exception e) {
                 throw new RuntimeException(e);
             }
         }).start();

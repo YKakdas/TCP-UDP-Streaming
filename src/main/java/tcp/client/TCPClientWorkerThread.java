@@ -1,6 +1,8 @@
 package tcp.client;
 
 import data.FrameInfo;
+import util.FrameUtil;
+import util.ImageUtil;
 
 import javax.imageio.ImageIO;
 import javax.swing.*;
@@ -54,6 +56,9 @@ public class TCPClientWorkerThread extends Thread {
 
                 if (image != null) {
                     Thread.sleep(50);
+                    if (FrameUtil.isCamera) {
+                        image = ImageUtil.mirror(image);
+                    }
                     ImageIcon icon = new ImageIcon(image);
                     lbl.setIcon(icon);
                     frame.setVisible(true);
