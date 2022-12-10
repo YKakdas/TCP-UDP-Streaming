@@ -49,15 +49,18 @@ public class TCPServerWorkerThread extends Thread {
 
         while (true) {
             long delta = Math.abs(Duration.between(before, after).toMillis());
-            if (ServerRunner.fixFPS && delta < 30 && delta != 0) {
+            if (ServerRunner.fixFPS && delta < 30) {
                 Thread.sleep(30 - delta);
             }
+            before = Instant.now();
             if (previousNum == FrameUtil.currentFrame.getFrameNum()) {
+                after = Instant.now();
                 continue;
             }
             int currentNum = FrameUtil.currentFrame.getFrameNum();
             output.writeObject(FrameUtil.currentFrame);
             output.flush();
+            after = Instant.now();
             previousNum = currentNum;
 
             if (FrameUtil.readingFramesOver) {

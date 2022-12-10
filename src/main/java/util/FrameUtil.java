@@ -1,5 +1,6 @@
 package util;
 
+import config.ServerRunner;
 import data.FrameInfo;
 import org.bytedeco.javacv.Frame;
 import org.bytedeco.javacv.FrameGrabber;
@@ -16,6 +17,8 @@ import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
+import java.time.Duration;
+import java.time.Instant;
 
 public class FrameUtil {
     public static volatile FrameInfo currentFrame = null;
@@ -23,16 +26,24 @@ public class FrameUtil {
     public static boolean isCamera = false;
 
     public static void readVideo() throws IOException, JCodecException, InterruptedException {
-        File file = new File("src/main/java/video_samples/10min.mp4");
+        File file = new File(ServerRunner.filepath);
         FrameGrab grab = FrameGrab.createFrameGrab(NIOUtils.readableChannel(file));
         Picture picture;
 
         int count = 0;
+        Instant before = Instant.now();
+        Instant after = Instant.now();
         while (null != (picture = grab.getNativeFrame())) {
+            long delta = Math.abs(Duration.between(before, after).toMillis());
+            if (ServerRunner.fixFPS && delta < 30) {
+                Thread.sleep(30 - delta);
+            }
+            before = Instant.now();
             BufferedImage bufferedImage = AWTUtil.toBufferedImage(picture);
             BufferedImage resized = ImageUtil.resize(bufferedImage, 720, 540);
             byte[] compressedImage = ImageUtil.compress(resized);
             currentFrame = new FrameInfo(compressedImage, count);
+            after = Instant.now();
             count++;
         }
         readingFramesOver = true;

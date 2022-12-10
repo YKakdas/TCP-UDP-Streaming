@@ -9,7 +9,7 @@ public class TCPClient {
         ExecutorService executorService = Executors.newFixedThreadPool(8);
 
         for (int i = 0; i < 1; i++) {
-            TCPClientWorkerThread thread = new TCPClientWorkerThread("localhost", 4000);
+            TCPClientWorkerThread thread = new TCPClientWorkerThread("localhost", 1234);
             executorService.submit(thread);
         }
         executorService.shutdown();

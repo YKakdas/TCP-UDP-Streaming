@@ -1,10 +1,10 @@
 package tcp.server;
 
 import config.ServerRunner;
-import org.jcodec.api.JCodecException;
 import util.FrameUtil;
 
 import java.io.IOException;
+import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -13,7 +13,7 @@ public class TCPServer {
 
     public TCPServer() throws IOException {
         ExecutorService executorService = Executors.newFixedThreadPool(8);
-        ServerSocket serverSocket = new ServerSocket(4000);
+        ServerSocket serverSocket = new ServerSocket(ServerRunner.serverPort, 0, InetAddress.getByName(ServerRunner.serverIP));
 
         new Thread(() -> {
             try {

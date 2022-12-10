@@ -33,6 +33,12 @@
             <artifactId>javacv-platform</artifactId>
             <version>1.5.8</version>
         </dependency>
+
+        <dependency>
+            <groupId>com.beust</groupId>
+            <artifactId>jcommander</artifactId>
+            <version>1.82</version>
+        </dependency>
     </dependencies>
 
     <properties>

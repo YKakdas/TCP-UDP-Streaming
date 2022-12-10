@@ -1,17 +1,17 @@
 package udp.server;
 
 import config.ServerRunner;
-import org.jcodec.api.JCodecException;
 import util.FrameUtil;
 
 import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
+import java.net.InetAddress;
 
 public class UDPServer {
 
     public UDPServer() throws IOException {
-        DatagramSocket socket = new DatagramSocket(1234);
+        DatagramSocket socket = new DatagramSocket(ServerRunner.serverPort, InetAddress.getByName(ServerRunner.serverIP));
         new Thread(() -> {
             try {
                 if (ServerRunner.isVideo) {
@@ -34,8 +34,6 @@ public class UDPServer {
             socket.receive(packet);
             new UDPServerWorkerThread(socket, packet).start();
         }
-
-        //   FrameUtil.readCamera();
 
     }
 
