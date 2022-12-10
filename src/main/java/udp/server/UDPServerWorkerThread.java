@@ -81,11 +81,9 @@ public class UDPServerWorkerThread extends Thread {
                 DatagramPacket sendFragment =
                         new DatagramPacket(sendBuffer, sendBuffer.length, clientAddress, clientPort);
                 socket.send(sendFragment);
-                System.out.println("sent");
             }
 
             previousNum = currentNum;
-            System.out.println("Heree");
 
             if (FrameUtil.readingFramesOver) {
                 break;
