@@ -23,7 +23,7 @@ public class FrameUtil {
     public static boolean isCamera = false;
 
     public static void readVideo() throws IOException, JCodecException, InterruptedException {
-        File file = new File("src/main/java/video_samples/2min.mp4");
+        File file = new File("src/main/java/video_samples/10min.mp4");
         FrameGrab grab = FrameGrab.createFrameGrab(NIOUtils.readableChannel(file));
         Picture picture;
 
@@ -33,7 +33,6 @@ public class FrameUtil {
             BufferedImage resized = ImageUtil.resize(bufferedImage, 720, 540);
             byte[] compressedImage = ImageUtil.compress(resized);
             currentFrame = new FrameInfo(compressedImage, count);
-            Thread.sleep(30);
             count++;
         }
         readingFramesOver = true;
@@ -69,7 +68,6 @@ public class FrameUtil {
                 byte[] compressedImage = ImageUtil.compress(resized);
 
                 currentFrame = new FrameInfo(compressedImage, count);
-                Thread.sleep(30);
 
                 count++;
             }
@@ -79,20 +77,4 @@ public class FrameUtil {
 
     }
 
-    public static BufferedImage rotate(BufferedImage image, double angle) {
-        int w = image.getWidth(), h = image.getHeight();
-        GraphicsConfiguration gc = getDefaultConfiguration();
-        BufferedImage result = gc.createCompatibleImage(w, h);
-        Graphics2D g = result.createGraphics();
-        g.rotate(Math.toRadians(angle), w / 2, h / 2);
-        g.drawRenderedImage(image, null);
-        g.dispose();
-        return result;
-    }
-
-    public static GraphicsConfiguration getDefaultConfiguration() {
-        GraphicsEnvironment ge = GraphicsEnvironment.getLocalGraphicsEnvironment();
-        GraphicsDevice gd = ge.getDefaultScreenDevice();
-        return gd.getDefaultConfiguration();
-    }
 }

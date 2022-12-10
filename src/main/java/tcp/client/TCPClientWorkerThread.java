@@ -55,7 +55,6 @@ public class TCPClientWorkerThread extends Thread {
                 BufferedImage image = ImageIO.read(new ByteArrayInputStream(frameInfo.getData()));
 
                 if (image != null) {
-                    Thread.sleep(50);
                     if (FrameUtil.isCamera) {
                         image = ImageUtil.mirror(image);
                     }

@@ -1,5 +1,6 @@
 package udp.server;
 
+import config.ServerRunner;
 import data.FrameInfo;
 import data.UDPDatagramInfo;
 import util.ByteUtil;
@@ -11,6 +12,8 @@ import java.io.ObjectOutputStream;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
+import java.time.Duration;
+import java.time.Instant;
 
 public class UDPServerWorkerThread extends Thread {
     private int serverPort;
@@ -48,10 +51,20 @@ public class UDPServerWorkerThread extends Thread {
         ByteArrayOutputStream baos;
         ObjectOutputStream oos;
         int previousNum = 0;
+
+        Instant before = Instant.now();
+        Instant after = Instant.now();
+
         while (true) {
+            long delta = Math.abs(Duration.between(before, after).toMillis());
+            if (ServerRunner.fixFPS && delta < 30 && delta != 0) {
+                Thread.sleep(30 - delta);
+            }
+            before = Instant.now();
             baos = new ByteArrayOutputStream();
             oos = new ObjectOutputStream(baos);
             if (previousNum == FrameUtil.currentFrame.getFrameNum()) {
+                after = Instant.now();
                 continue;
             }
             int currentNum = FrameUtil.currentFrame.getFrameNum();
@@ -61,7 +74,7 @@ public class UDPServerWorkerThread extends Thread {
 
             byte[] frameBuf = baos.toByteArray();
 
-            int numberOfFragments = (int) Math.ceil((double) frameBuf.length / 64000);
+            int numberOfFragments = (int) Math.ceil((double) frameBuf.length / 1024);
             UDPDatagramInfo udpDatagramInfo = new UDPDatagramInfo(frameBuf.length, numberOfFragments);
 
             baos = new ByteArrayOutputStream();
@@ -75,15 +88,17 @@ public class UDPServerWorkerThread extends Thread {
             socket.send(metadataPacket);
 
             for (int i = 0; i < numberOfFragments; i++) {
-                int start = i * 64000;
-                int end = (i + 1) * 64000;
+                int start = i * 1024;
+                int end = (i + 1) * 1024;
                 byte[] sendBuffer = ByteUtil.getSubArray(start, end, frameBuf);
                 DatagramPacket sendFragment =
                         new DatagramPacket(sendBuffer, sendBuffer.length, clientAddress, clientPort);
                 socket.send(sendFragment);
             }
 
+            after = Instant.now();
             previousNum = currentNum;
+
 
             if (FrameUtil.readingFramesOver) {
                 break;

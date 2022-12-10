@@ -49,11 +49,12 @@ public class UDPClientWorkerThread extends Thread {
 
                     baos = new ByteArrayInputStream(buffer);
                     oos = new ObjectInputStream(baos);
+
                     UDPDatagramInfo udpDatagramInfo = (UDPDatagramInfo) oos.readObject();
                     byte[] frameData = new byte[udpDatagramInfo.getSize()];
                     int count = 0;
                     for (int i = 0; i < udpDatagramInfo.getNumberOfFragments(); i++) {
-                        byte[] segmentBuffer = new byte[64000];
+                        byte[] segmentBuffer = new byte[1024];
                         DatagramPacket segmentPacket = new DatagramPacket(segmentBuffer, segmentBuffer.length);
                         socket.receive(segmentPacket);
                         ByteUtil.mergeArrays(ByteUtil.splitArray(segmentPacket.getData(), segmentPacket.getLength()), frameData, count);

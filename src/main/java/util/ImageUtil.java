@@ -1,5 +1,7 @@
 package util;
 
+import config.ServerRunner;
+
 import javax.imageio.IIOImage;
 import javax.imageio.ImageIO;
 import javax.imageio.ImageWriteParam;
@@ -21,7 +23,7 @@ public class ImageUtil {
             // Configure JPEG compression: 70% quality
             ImageWriteParam jpgWriteParam = jpgWriter.getDefaultWriteParam();
             jpgWriteParam.setCompressionMode(ImageWriteParam.MODE_EXPLICIT);
-            jpgWriteParam.setCompressionQuality(0.3f);
+            jpgWriteParam.setCompressionQuality(ServerRunner.quality);
 
             // Set your in-memory stream as the output
             jpgWriter.setOutput(outputStream);
