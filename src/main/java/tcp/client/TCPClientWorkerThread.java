@@ -7,11 +7,16 @@ import util.ImageUtil;
 import javax.imageio.ImageIO;
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
+import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.net.InetAddress;
 import java.net.Socket;
+import java.net.SocketException;
+import java.net.SocketTimeoutException;
 
 public class TCPClientWorkerThread extends Thread {
 
@@ -39,10 +44,25 @@ public class TCPClientWorkerThread extends Thread {
         try {
 
             socket = new Socket(InetAddress.getByName(serverAddress), serverPort);
+            socket.setSoTimeout(3000);
 
             ObjectInputStream input = new ObjectInputStream(socket.getInputStream());
 
             frame.setSize(720, 540);
+            frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+            frame.addWindowListener(new WindowAdapter() {
+                @Override
+                public void windowClosing(WindowEvent e) {
+                    System.out.println("Client terminated streaming.");
+                    try {
+                        socket.close();
+                    } catch (IOException ex) {
+                        throw new RuntimeException(ex);
+                    }
+                    e.getWindow().dispose();
+                    System.exit(0);
+                }
+            });
 
             while (true) {
                 FrameInfo frameInfo = (FrameInfo) input.readObject();
@@ -64,7 +84,10 @@ public class TCPClientWorkerThread extends Thread {
                 }
             }
         } catch (Exception e) {
-            e.printStackTrace();
+            if (e instanceof SocketException || e instanceof SocketTimeoutException) {
+                System.out.println("Streaming completed.");
+                System.exit(0);
+            }
         }
 
     }

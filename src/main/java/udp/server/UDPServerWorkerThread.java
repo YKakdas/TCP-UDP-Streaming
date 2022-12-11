@@ -101,11 +101,11 @@ public class UDPServerWorkerThread extends Thread {
 
 
             if (FrameUtil.readingFramesOver) {
-                break;
+                System.out.println("Streaming completed.");
+                socket.close();
+                System.exit(0);
             }
         }
-        oos.writeInt(-1);
-        oos.flush();
-        socket.close();
+
     }
 }

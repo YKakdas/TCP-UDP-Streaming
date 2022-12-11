@@ -14,6 +14,8 @@ import org.jcodec.scale.AWTUtil;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
@@ -23,6 +25,7 @@ import java.time.Instant;
 public class FrameUtil {
     public static volatile FrameInfo currentFrame = null;
     public static boolean readingFramesOver = false;
+    public static boolean serverDown = false;
     public static boolean isCamera = false;
 
     public static void readVideo() throws IOException, JCodecException, InterruptedException {
@@ -55,7 +58,18 @@ public class FrameUtil {
             JFrame jFrame = new JFrame();
             jFrame.setLayout(new FlowLayout());
             jFrame.setSize(720, 540);
+            jFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
             jFrame.setTitle("Server - Streaming Camera");
+            jFrame.addWindowListener(new WindowAdapter() {
+                @Override
+                public void windowClosing(WindowEvent e) {
+                    System.out.println("Server terminated streaming.");
+                    readingFramesOver = true;
+                    serverDown = true;
+                    e.getWindow().dispose();
+                    System.exit(0);
+                }
+            });
 
             JLabel lbl = new JLabel();
             jFrame.add(lbl);

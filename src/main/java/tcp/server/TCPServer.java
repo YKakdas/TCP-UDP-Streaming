@@ -17,12 +17,12 @@ public class TCPServer {
 
         new Thread(() -> {
             try {
-                if (ServerRunner.isVideo) {
-                    System.out.println("TCP server is running for streaming a video...");
-                    FrameUtil.readVideo();
-                } else if (ServerRunner.isWebcam) {
+                if (ServerRunner.isWebcam) {
                     System.out.println("TCP server is running for streaming webcam...");
                     FrameUtil.readCamera();
+                } else if (ServerRunner.isVideo) {
+                    System.out.println("TCP server is running for streaming a video...");
+                    FrameUtil.readVideo();
                 } else {
                     System.out.println("Wrong inputs! Please specify the input such as -video or -webcam");
                     System.exit(0);

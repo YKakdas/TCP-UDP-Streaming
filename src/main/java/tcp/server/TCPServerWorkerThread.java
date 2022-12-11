@@ -64,12 +64,10 @@ public class TCPServerWorkerThread extends Thread {
             previousNum = currentNum;
 
             if (FrameUtil.readingFramesOver) {
-                break;
+                System.out.println("Streaming completed.");
+                socket.close();
+                System.exit(0);
             }
         }
-
-        output.writeInt(-1);
-        output.flush();
-        socket.close();
     }
 }

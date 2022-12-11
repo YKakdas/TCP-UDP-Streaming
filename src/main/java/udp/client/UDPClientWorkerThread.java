@@ -9,12 +9,13 @@ import util.ImageUtil;
 import javax.imageio.ImageIO;
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
+import java.io.EOFException;
 import java.io.ObjectInputStream;
-import java.net.DatagramPacket;
-import java.net.DatagramSocket;
-import java.net.InetAddress;
+import java.net.*;
 
 public class UDPClientWorkerThread extends Thread {
 
@@ -33,11 +34,22 @@ public class UDPClientWorkerThread extends Thread {
         try {
             DatagramSocket socket = new DatagramSocket();
             InetAddress ipAddress = InetAddress.getByName("localhost");
-
+            socket.setSoTimeout(3000);
             frame.setSize(720, 540);
+            frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
             DatagramPacket initPacket = new DatagramPacket("init".getBytes(), "init".getBytes().length, ipAddress, 1234);
             socket.send(initPacket);
+
+            frame.addWindowListener(new WindowAdapter() {
+                @Override
+                public void windowClosing(WindowEvent e) {
+                    System.out.println("Client terminated streaming.");
+                    socket.close();
+                    e.getWindow().dispose();
+                    System.exit(0);
+                }
+            });
 
             ByteArrayInputStream baos;
             ObjectInputStream oos;
@@ -81,12 +93,21 @@ public class UDPClientWorkerThread extends Thread {
                         frame.setVisible(true);
                     }
                 } catch (Exception e) {
-                    //  e.printStackTrace();
+                    if (e instanceof SocketException || e instanceof SocketTimeoutException) {
+                        System.out.println("Streaming completed.");
+                        socket.close();
+                        System.exit(0);
+                    }
                 }
 
             }
         } catch (Exception e) {
-            //   e.printStackTrace();
+            if (e instanceof EOFException) {
+                System.out.println("Streaming completed.");
+             //   System.exit(0);
+            }else {
+                e.printStackTrace();
+            }
         }
 
     }

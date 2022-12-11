@@ -14,10 +14,12 @@ public class UDPServer {
         DatagramSocket socket = new DatagramSocket(ServerRunner.serverPort, InetAddress.getByName(ServerRunner.serverIP));
         new Thread(() -> {
             try {
-                if (ServerRunner.isVideo) {
-                    FrameUtil.readVideo();
-                } else if (ServerRunner.isWebcam) {
+                if (ServerRunner.isWebcam) {
+                    System.out.println("UDP server is running for streaming webcam...");
                     FrameUtil.readCamera();
+                } else if (ServerRunner.isVideo) {
+                    System.out.println("UDP server is running for streaming a video...");
+                    FrameUtil.readVideo();
                 } else {
                     System.out.println("Wrong inputs! Please specify the input such as -video or -webcam");
                     System.exit(0);
@@ -29,10 +31,18 @@ public class UDPServer {
         }).start();
 
         while (true) {
-            byte[] buf = new byte[1024];
-            DatagramPacket packet = new DatagramPacket(buf, buf.length);
-            socket.receive(packet);
-            new UDPServerWorkerThread(socket, packet).start();
+            try {
+                byte[] buf = new byte[1024];
+                DatagramPacket packet = new DatagramPacket(buf, buf.length);
+                socket.receive(packet);
+                new UDPServerWorkerThread(socket, packet).start();
+            } catch (Exception e) {
+                if (FrameUtil.serverDown) {
+                    System.out.println("Server shutdown");
+                    System.exit(0);
+                }
+            }
+
         }
 
     }
