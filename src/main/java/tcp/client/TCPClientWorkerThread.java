@@ -11,12 +11,11 @@ import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
+import java.io.EOFException;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.net.InetAddress;
 import java.net.Socket;
-import java.net.SocketException;
-import java.net.SocketTimeoutException;
 
 public class TCPClientWorkerThread extends Thread {
 
@@ -84,7 +83,7 @@ public class TCPClientWorkerThread extends Thread {
                 }
             }
         } catch (Exception e) {
-            if (e instanceof SocketException || e instanceof SocketTimeoutException) {
+            if (e instanceof EOFException) {
                 System.out.println("Streaming completed.");
                 System.exit(0);
             }

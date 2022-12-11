@@ -14,12 +14,12 @@ public class ServerRunner {
     @Parameter(names = {"-w", "-webcam"}, description = "Streams live camera feed of the server", order = 4)
     public static boolean isWebcam = false;
     @Parameter(names = {"-v", "-video"}, description = "Streams a video", order = 3)
-    public static boolean isVideo = true;
+    public static boolean isVideo = false;
     @Parameter(names = {"-u", "-udp"}, description = "Utilizes UDP Sockets while streaming", order = 6)
     public static boolean isUdp = false;
     @Parameter(names = {"-t", "-tcp"}, description = "Utilizes TCP Sockets while streaming", order = 5)
-    public static boolean isTcp = true;
-    @Parameter(names = {"-fps"}, description = "Tries to keep target frame rate at 30 frames per second", order = 8)
+    public static boolean isTcp = false;
+    @Parameter(names = {"-fps"}, description = "Does not try to keep fps at 30. Transmits frames as soon as possible", order = 8)
     public static boolean fixFPS = true;
     @Parameter(names = {"-q", "-quality"},
             description = "Determines the amount of the compression. Range: [0-1]. 1 means no compression", order = 7)
@@ -54,16 +54,24 @@ public class ServerRunner {
             commander.usage();
         }
 
-        if (isUdp) {
-            new UDPServer();
-        } else {
-            new TCPServer();
+        if (!isVideo && !isWebcam) {
+            isVideo = true;
+        }
+
+        if (!isUdp && !isTcp) {
+            isTcp = true;
         }
 
         if (isShort) {
             filepath = "src/main/java/video_samples/2min.mp4";
         } else if (isLong) {
             filepath = "src/main/java/video_samples/10min.mp4";
+        }
+
+        if (isUdp) {
+            new UDPServer();
+        } else {
+            new TCPServer();
         }
 
     }

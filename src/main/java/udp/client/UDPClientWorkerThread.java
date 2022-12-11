@@ -13,14 +13,16 @@ import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
-import java.io.EOFException;
 import java.io.ObjectInputStream;
 import java.net.*;
+import java.util.ArrayList;
+import java.util.Collections;
 
 public class UDPClientWorkerThread extends Thread {
 
     private int width;
     private int height;
+    private ArrayList<Integer> frameNums = new ArrayList<>();
 
     @Override
     public void run() {
@@ -85,6 +87,7 @@ public class UDPClientWorkerThread extends Thread {
 
                     BufferedImage image = ImageIO.read(new ByteArrayInputStream(frameInfo.getData()));
                     if (image != null) {
+                        frameNums.add(frameInfo.getFrameNum());
                         if (FrameUtil.isCamera) {
                             image = ImageUtil.mirror(image);
                         }
@@ -95,6 +98,10 @@ public class UDPClientWorkerThread extends Thread {
                 } catch (Exception e) {
                     if (e instanceof SocketException || e instanceof SocketTimeoutException) {
                         System.out.println("Streaming completed.");
+                        Collections.sort(frameNums);
+                        int missedFrames = frameNums.get(frameNums.size() - 1) - frameNums.get(0) - frameNums.size();
+                        System.out.println("Total of " + frameNums.size() + " frames transmitted.");
+                        System.out.println(missedFrames + " frames were missed");
                         socket.close();
                         System.exit(0);
                     }
@@ -102,10 +109,10 @@ public class UDPClientWorkerThread extends Thread {
 
             }
         } catch (Exception e) {
-            if (e instanceof EOFException) {
+            if (e instanceof SocketException || e instanceof SocketTimeoutException) {
                 System.out.println("Streaming completed.");
-             //   System.exit(0);
-            }else {
+                System.exit(0);
+            } else {
                 e.printStackTrace();
             }
         }

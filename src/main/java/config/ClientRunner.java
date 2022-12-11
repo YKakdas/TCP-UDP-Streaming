@@ -12,7 +12,7 @@ public class ClientRunner {
     @Parameter(names = {"-u", "-udp"}, description = "Utilizes UDP Sockets while streaming", order = 3)
     public static boolean isUdp = false;
     @Parameter(names = {"-t", "-tcp"}, description = "Utilizes TCP Sockets while streaming", order = 4)
-    public static boolean isTcp = true;
+    public static boolean isTcp = false;
     @Parameter(names = "-ip",
             description = "IP Address of the server", order = 1)
     public static String serverIP = "127.0.0.1";
@@ -31,6 +31,10 @@ public class ClientRunner {
 
         if (help) {
             commander.usage();
+        }
+
+        if (!isTcp && !isUdp) {
+            isTcp = true;
         }
 
         if (isUdp) {
