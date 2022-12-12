@@ -38,8 +38,8 @@ public class FrameUtil {
         Instant after = Instant.now();
         while (null != (picture = grab.getNativeFrame())) {
             long delta = Math.abs(Duration.between(before, after).toMillis());
-            if (ServerRunner.fixFPS && delta < 30) {
-                Thread.sleep(30 - delta);
+            if (ServerRunner.fixFPS && delta < 40) {
+                Thread.sleep(40 - delta);
             }
             before = Instant.now();
             BufferedImage bufferedImage = AWTUtil.toBufferedImage(picture);

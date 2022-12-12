@@ -19,7 +19,7 @@ public class ServerRunner {
     public static boolean isUdp = false;
     @Parameter(names = {"-t", "-tcp"}, description = "Utilizes TCP Sockets while streaming", order = 5)
     public static boolean isTcp = false;
-    @Parameter(names = {"-fps"}, description = "Does not try to keep fps at 30. Transmits frames as soon as possible", order = 8)
+    @Parameter(names = {"-fps"}, description = "Does not try to keep fps at 24. Transmits frames as soon as possible", order = 8)
     public static boolean fixFPS = true;
     @Parameter(names = {"-q", "-quality"},
             description = "Determines the amount of the compression. Range: [0-1]. 1 means no compression", order = 7)
